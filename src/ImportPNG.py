@@ -57,11 +57,11 @@ for Type in [TypeA,TypeB,TypeC]:
         
             Width,Height,Tilew,Tileh = Type.ConfigA(src,filesize)
             DatOffset,PalOffset,PalSize = Type.ConfigB(src)
-            PicType,PalType,PicRGBA,PalRGBA,Option = Type.ConfigC(src)
+            PicType,PalType,PicRGBA,PalRGBA,Option,inputIsSwizzled = Type.ConfigC(src)
         
             PicDat = open(outputname,'rb')
             PicPal = GetPicPal(src,PalType,PalOffset,PalSize,PalRGBA)
-            ImgImport(src,PicDat,PalOffset,DatOffset,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal)
+            ImgImport(src,PicDat,PalOffset,DatOffset,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal,inputIsSwizzled)
         
             t = (time.clock() - t0)
         

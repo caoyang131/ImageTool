@@ -57,11 +57,11 @@ for Type in [TypeA,TypeB,TypeC]:
         
             Width,Height,Tilew,Tileh = Type.ConfigA(src,filesize)
             DatOffset,PalOffset,PalSize = Type.ConfigB(src)
-            PicType,PalType,PicRGBA,PalRGBA,Option = Type.ConfigC(src)
+            PicType,PalType,PicRGBA,PalRGBA,Option,inputIsSwizzled = Type.ConfigC(src)
         
             PicDat = GetPicDat(src,PicType,DatOffset,Width,Height)
             PicPal = GetPicPal(src,PalType,PalOffset,PalSize,PalRGBA)
-            ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal)
+            ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal,inputIsSwizzled)
         
             t = (time.clock() - t0)
         

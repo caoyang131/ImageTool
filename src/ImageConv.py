@@ -2,8 +2,9 @@
 # ImageConv Ver 1.00
 #=========================================#
 import io,os,struct
-from math import sqrt
+from math import sqrt,log
 from PIL import Image # Version >= 2.6.1
+from Swizzle import *
 #=========================================#
 # ImageLibs Ver 1.30
 # 
@@ -11,6 +12,8 @@ from PIL import Image # Version >= 2.6.1
 # 2:Set Endian Format ('>','rgba')
 # 3:Add NewIndex8 Mode (Experimental)
 # 4:Add Index2 Mode (Experimental)
+#
+#=========================================#
 #
 #=========================================#
 class GetPalMode():
@@ -164,7 +167,7 @@ def GetPicPal(src,PalType,PalOffset,PalSize,PalRGBA):
 #=========================================#
 # ExportPNG Ver 1.00
 #=========================================#
-def ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal):
+def ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal,inputIsSwizzled):
     
     Export = ExportPic()
     ExportDxt = ExportDDS()
@@ -191,7 +194,14 @@ def ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Opt
         dest = ExportDxt.DXT5(PicDat,Tilew,Tileh,Width,Height,PicType,PicRGBA,PicPal=None)
         
     im = Image.new('RGBA',(Width,Height))
-    im.putdata(tuple(dest[:Width*Height]))
+
+    # TODO:Add Swizzle
+    if(inputIsSwizzled):
+        maskMutex = swizzle(Width,Height)
+        tmp_desc = convert(dest[:Width*Height],maskMutex,False)
+        im.putdata(tuple(tmp_desc))
+    else:
+        im.putdata(dest[:Width*Height])
     
     if Option == 1:
         im = im.transpose(Image.FLIP_TOP_BOTTOM)
@@ -364,11 +374,22 @@ class ExportPic():
 #=========================================#
 # ImportPNG Ver 1.00
 #=========================================#
-def ImgImport(src,PicDat,PalOffset,DatOffset,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal):
+def ImgImport(src,PicDat,PalOffset,DatOffset,PicType,Tilew,Tileh,Width,Height,PicRGBA,Option,PicPal,inputIsSwizzled):
     
     Import = ImportPic()
     ImportDxt = ImportDDS()
     ImgDat = Image.open(PicDat).convert('RGBA')
+
+
+    im = Image.new('RGBA',(Width,Height))
+
+    # TODO:Add Swizzle
+    if(inputIsSwizzled):
+        maskMutex = swizzle(Width,Height)
+        tmp_desc = convert(ImgDat.getdata(),maskMutex,True)
+        ImgDat = im.putdata(tuple(tmp_desc))
+    else:
+        pass
     
     if Option == 1:
         ImgDat = ImgDat.transpose(Image.FLIP_TOP_BOTTOM)

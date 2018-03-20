@@ -25,39 +25,17 @@ class ImageTypeA():
     def ConfigA(self,src,filesize):
         
         # (Tilew,Tileh) = [(Width,1):None,(8,8):OtherMode,(4,8):RGBA8888,(32,8):Index4,(16,8):Index8]
-        src.seek(0)
-        idstring = src.read(8)
         
-        if(idstring==b'Texture '):
-            value = 0xC
-        else:
-            value = 0
-
-
-        src.seek(0x8+value)
-        Width, = struct.unpack('<I',src.read(4))
-        Height, = struct.unpack('<I',src.read(4))
+        Width = 1024
+        Height = 1024
         (Tilew,Tileh) = (Width,1)
         
         return Width,Height,Tilew,Tileh
     #=========================================
     def ConfigB(self,src):
-        src.seek(0)
-        idstring = src.read(8)
-        
-        if(idstring==b'Texture '):
-            value = 0xC
-        else:
-            value = 0
-        
-            
-        src.seek(0x4+value)
-        PalOffset, = struct.unpack('<I',src.read(4))
+        PalOffset = 0
         PalSize = 0x40
-        DatOffset = 0x10+value
-        PalOffset -= PalSize
-        PalOffset += DatOffset
-        print(DatOffset,PalOffset,PalSize)
+        DatOffset = 0x40
         return DatOffset,PalOffset,PalSize
     #=========================================
     def ConfigC(self,src):
@@ -75,8 +53,9 @@ class ImageTypeA():
         PalRGBA = ('>','rgba')
         PicRGBA = ('>','rgba')
         Option = 0
+        inputIsSwizzled = 1
         
-        return PicType,PalType,PicRGBA,PalRGBA,Option
+        return PicType,PalType,PicRGBA,PalRGBA,Option,inputIsSwizzled
 #=========================================
 # Config Image TypeB(FONT)
 #=========================================
@@ -129,9 +108,10 @@ class ImageTypeB():
         PalType = 'None'
         PalRGBA = ('>','rgba')
         PicRGBA = ('>','rgba')
-        Option = 0
+        Option = 0,
+        inputIsSwizzled = 0
         
-        return PicType,PalType,PicRGBA,PalRGBA,Option
+        return PicType,PalType,PicRGBA,PalRGBA,Option,inputIsSwizzled
 #=========================================
 # ConfigPNG End
 #=========================================
@@ -193,5 +173,5 @@ class ImageTypeC():
         PalRGBA = ('>','rgba')
         PicRGBA = ('>','rgba')
         Option = 0
-        
-        return PicType,PalType,PicRGBA,PalRGBA,Option
+        inputIsSwizzled = 0        
+        return PicType,PalType,PicRGBA,PalRGBA,Option,inputIsSwizzled
