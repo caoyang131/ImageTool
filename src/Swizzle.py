@@ -1,85 +1,71 @@
 import math
 
-def ceilLog2(num):
-    return math.ceil(math.log(num,2))
 
-xMaskBase = 0x55555555
-yMaskBase = 0xAAAAAAAA
+def Compact1By1(x):
+    x &= 0x55555555
+    x = (x ^ (x >> 1)) & 0x33333333
+    x = (x ^ (x >> 2)) & 0x0f0f0f0f
+    x = (x ^ (x >> 4)) & 0x00ff00ff
+    x = (x ^ (x >> 8)) & 0x0000ffff
+    return x
 
-def swizzle(width, height):
 
-    result = []
+def DecodeMorton2X(code):
+    return Compact1By1(code >> 0)
 
-    log2Width = ceilLog2(width)
-    log2Height = ceilLog2(height)
 
-    maxMask = 1 << (log2Width << 1)
-    xMask = (xMaskBase | -maxMask)
-    yMask = yMaskBase & (maxMask - 1)
+def DecodeMorton2Y(code):
+    return Compact1By1(code >> 1)
 
-    transFormY = []
-    currentY = 0
-    
-    for i in range(height):
-        transFormY.append(currentY)
-        currentY = (currentY - yMask) & yMask
 
-    def getTransFormXInLineY(y, times):
+def UnswizzleTexture(pixelData, width, height,swizzled):
 
-        transFormX = []
-        offsX = times * maxMask
+    unswizzled = [(0, 0, 0, 0)] * len(pixelData)
 
-        for i in range(width):
-            transFormX.append(offsX + y + times * maxMask)
-            offsX = (offsX - xMask) & xMask
-        
+    if (width < height):
+        min = width
+    else:
+        min = height
 
-        return transFormX
+    k = int(math.log(min, 2))
 
-    timesArray = []
-    times = -1
-    
-    for i in range(height):
-        if (transFormY[i] == 0):
-            times+=1
-        timesArray.append(times)
+    print(min, k)
 
-    for i in range(len(transFormY)):
-        result.extend(getTransFormXInLineY(transFormY[i],timesArray[i]))
+    for i in range(width * height):
 
-    return result
-
-# test
-
-def convert(arr, maskMutex,isSwizzled):
-    newArr = [0]*len(maskMutex)
-
-    for i in range(len(maskMutex)):
-        if(isSwizzled):
-            newArr[maskMutex[i]] = arr[i]
+        if (height < width):
+            j = int(((i >> (2 * k) << (2 * k)) | ((DecodeMorton2Y(i) & (min - 1)) << k) | ((DecodeMorton2X(i) & (min - 1)) << 0)))
+            x = int(j // height)
+            y = int(j % height)
         else:
-            newArr[i] = arr[maskMutex[i]]
+            j = int(((i >> (2 * k) << (2 * k)) | ((DecodeMorton2X(i) & (min - 1)) << k) | ((DecodeMorton2Y(i) & (min - 1)) << 0)))
+            x = int(j // width)
+            y = int(j % width)
 
-    return newArr
+        if (y >= height or x >= width): continue
 
-'''
-test = list(range(256))
+        #unswizzled[((y * width) + x)] = pixelData[i]
+
+        if(swizzled):
+            unswizzled[i] = pixelData[((y * width) + x)]
+        else:
+            unswizzled[((y * width) + x)] = pixelData[i]
 
 
-maskMutex = swizzle(16, 16)
-print('maskMutex')
-print(maskMutex)
-arr = convert(test, maskMutex,True)
-print('arr')
-print(arr)
-reArr = convert(arr, maskMutex,False)
-print('reArr')
-print(reArr)
-'''
+    return unswizzled
 
-    
-        
 
-        
-        
-    
+pixelData = [];
+
+for y in range(64):
+    pixelData.append((y, y, y, 255))
+
+print(pixelData)
+
+swPixelData = UnswizzleTexture(pixelData, 8, 8,True)
+
+print(swPixelData)
+
+origin = UnswizzleTexture(swPixelData, 8, 8,False)
+
+print(origin)

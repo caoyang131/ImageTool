@@ -197,8 +197,7 @@ def ImgExport(src,PicDat,outputname,PicType,Tilew,Tileh,Width,Height,PicRGBA,Opt
 
     # TODO:Add Swizzle
     if(inputIsSwizzled):
-        maskMutex = swizzle(Width,Height)
-        tmp_desc = convert(dest[:Width*Height],maskMutex,False)
+        tmp_desc = UnswizzleTexture(dest[:Width*Height],Width,Height,False)
         im.putdata(tuple(tmp_desc))
     else:
         im.putdata(dest[:Width*Height])
@@ -385,8 +384,7 @@ def ImgImport(src,PicDat,PalOffset,DatOffset,PicType,Tilew,Tileh,Width,Height,Pi
 
     # TODO:Add Swizzle
     if(inputIsSwizzled):
-        maskMutex = swizzle(Width,Height)
-        tmp_desc = convert(ImgDat.getdata(),maskMutex,True)
+        tmp_desc = UnswizzleTexture(ImgDat.getdata(),Width,Height,True)
         ImgDat = im.putdata(tuple(tmp_desc))
     else:
         pass
